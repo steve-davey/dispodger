@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <title>Dispodger 4.0</title>
+  <h1>Dispodger v4</h1>
+  <style>
+  td {
+    max-width: 15vw;
+    overflow: auto;
+  }
+  </style>
+</head>
+<body>
+  <div>
+
+    <label for="name">File delimiter (optional, max 1 character):</label>
+
+    <input type="text" id="delimiter" name="delimiter" required
+    minlength="0" maxlength="1" size="1"><br>
+
+    <input type="file" name="filename" id="fileInput">
+
+    <div class="csv"></div>
+
+    <script src="csv.js"></script>
+
+  </div>
+
+  <a href="index.html">home</a>
+
+</body>
+</html>
