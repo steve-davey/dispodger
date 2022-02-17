@@ -1,4 +1,4 @@
-const allRows = [];
+let allRows = [];
 
 async function fileToLines(file) {
   return new Promise((resolve, reject) => {
@@ -26,6 +26,10 @@ document
         var idFiltered = id.filter(function (v) { return v !== '' });
 
         console.log(idFiltered)
+
+        if (file != undefined) {
+          allRows = [];
+        }
 
         for (let id of idFiltered) {
           const row = await getRelease(id);
@@ -157,6 +161,6 @@ function download() {
   var link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("download", "my_data.csv");
-  document.body.appendChild(link); // Required for FF
+  document.body.appendChild(link); // Required for Firefox
   link.click();
 }
