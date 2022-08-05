@@ -56,7 +56,6 @@ const createThrottler = (limitHeader) => {
       requestTimestamp = Number(Date.now());
       const response = await requestHandler(...params);
       if (!rateLimit > 0) {
-        // rateLimit = Math.floor((60 / response.headers.get(limitHeader)) * 1000);
         rateLimit = limitHeader;
       }
       console.log(limitHeader);
@@ -66,7 +65,6 @@ const createThrottler = (limitHeader) => {
   }
 }
 
-// const throttle = createThrottler("x-discogs-ratelimit");
 const throttle = createThrottler("60");
 const throttleFetch = throttle(fetch);
 
