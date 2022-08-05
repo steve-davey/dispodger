@@ -40,33 +40,26 @@ document
     }
   });
 
-const timer = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-const createThrottler = (limitHeader) => {
-  let requestTimestamp = 0;
-  let rateLimit = 0;
-  return (requestHandler) => {
-    return async (...params) => {
-      const currentTimestamp = Number(Date.now());
-      if (currentTimestamp < requestTimestamp + rateLimit) {
-        const timeOut = rateLimit - (currentTimestamp - requestTimestamp);
-        requestTimestamp = Number(Date.now()) + timeOut;
-        await timer(timeOut)
-      }
-      requestTimestamp = Number(Date.now());
-      const response = await requestHandler(...params);
-      if (!rateLimit > 0) {
-        rateLimit = limitHeader;
-      }
-      console.log(limitHeader);
-      console.log(rateLimit);
-      return response;
-    }
+  function debounce(inner, ms = 0) {
+    let timer = null;
+    let resolves = [];
+  
+    return function (...args) {
+      // Run the function after a certain amount of time
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        /* Get the result of the inner function, then apply it to the resolve function of
+        each promise that has been created since the last time the inner function was run */
+        let result = inner(...args);
+        resolves.forEach(r => r(result));
+        resolves = [];
+      }, ms);
+  
+      return new Promise(r => resolves.push(r));
+    };
   }
-}
-
-const throttle = createThrottler("60");
-const throttleFetch = throttle(fetch);
+  
+  const throttleFetch = debounce(fetch, 2500);
 
 function getRelease(idFiltered) {
   return throttleFetch(`https://api.discogs.com/releases/${idFiltered}`, {
