@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "throttled-queue": "^2.1.4"
+  }
+}
