@@ -17,5 +17,3 @@ Dispodger is intended to do the following:
 - barcode
 - tracklist
 
-It is not fully functional as yet, as discogs server is returing '429 - too many requests' errors due to exceeding their rate limit of 60 requests per minute.
-
