@@ -33,7 +33,52 @@ document
     }
   });
 
-const throttledQueue = require('throttled-queue');
+function throttledQueue(maxRequestsPerInterval, interval, evenlySpaced) {
+  if (evenlySpaced === void 0) { evenlySpaced = false; } // If all requests should be evenly spaced, adjust to suit.
+  if (evenlySpaced) { interval = interval / maxRequestsPerInterval; maxRequestsPerInterval = 1; }
+  var queue = [];
+  var lastIntervalStart = 0;
+  var numRequestsPerInterval = 0;
+  var timeout; // Gets called at a set interval to remove items from the queue. This is a self-adjusting timer, since the browser's setTimeout is highly inaccurate.
+  var dequeue = function () {
+    var intervalEnd = lastIntervalStart + interval;
+    var now = Date.now(); // Adjust the timer if it was called too early.
+    if (now < intervalEnd) { 
+      // eslint - disable - next - line @typescript-eslint / no - unsafe - argument timeout !== undefined && clearTimeout(timeout);
+      timeout = setTimeout(dequeue, intervalEnd - now);
+      return;
+    }
+    lastIntervalStart = now;
+    numRequestsPerInterval = 0;
+    for (var _i = 0, _a = queue.splice(0, maxRequestsPerInterval); _i < _a.length; _i++) {
+      var callback = _a[_i]; numRequestsPerInterval++; void callback();
+    }
+    if (queue.length) {
+      timeout = setTimeout(dequeue, interval);
+    }
+    else { timeout = undefined; }
+  };
+  return function (fn) {
+    return new Promise(function (resolve, reject) {
+      var callback = function () {
+        return Promise.resolve().then(fn).then(resolve).catch(reject);
+      };
+      var now = Date.now(); 
+      if (timeout === undefined && (now - lastIntervalStart) > interval) { lastIntervalStart = now; numRequestsPerInterval = 0; }
+      if (numRequestsPerInterval++ < maxRequestsPerInterval) { void callback(); }
+      else {
+        queue.push(callback);
+        if (timeout === undefined) { timeout = setTimeout(dequeue, lastIntervalStart + interval - now); }
+      }
+    });
+  };
+}
+
+export { throttledQueue }
+
+<script type="module"> import {throttledQueue} from './throttledQueue.js'; console.log(throttledQueue); </script> 
+
+// const throttledQueue = require('throttled-queue');
 const throttle = throttledQueue(1, 1000);
 
 throttle(() => getRelease(idFiltered));
@@ -42,7 +87,7 @@ async function getRelease(idFiltered) {
   return fetch(`https://api.discogs.com/releases/${idFiltered}`, {
     headers: {
       'User-Agent': 'Dispodger/0.1',
-      'Authorization': 'Discogs key=dANvHNaHmlAtGVZVZPhq, secret=KOuEKidlWuHjlsNKPBHJOrseESdNJqhW',
+      'Authorization': 'Discogs key=${{ secrets.KEY }}, secret=${{ secrets.SECRET }}',
     },
   }).then(response => response.json())
     .then(data => {
